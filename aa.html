@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Balcão Interativo</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    text-align:center;
+}
+
+.container{
+    background:white;
+    width:900px;
+    margin:20px auto;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+input{
+    width:100px;
+    padding:5px;
+    margin:5px;
+}
+
+button{
+    padding:10px 20px;
+    margin-top:10px;
+    cursor:pointer;
+    background:#007bff;
+    color:white;
+    border:none;
+    border-radius:5px;
+}
+
+#desenho{
+    margin-top:30px;
+    border:2px solid #333;
+    position:relative;
+    display:inline-block;
+    background:#e9e9e9;
+}
+
+.ponto{
+    width:16px;
+    height:16px;
+    border-radius:50%;
+    position:absolute;
+    transform:translate(-50%,-50%);
+    cursor:pointer;
+}
+
+.ativo{
+    background:red;
+}
+
+.inativo{
+    background:#ccc;
+}
+
+.resultado{
+    margin-top:20px;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Balcão Interativo com Pilares</h2>
+
+Largura (m): <input type="number" id="largura"><br>
+Comprimento (m): <input type="number" id="comprimento"><br>
+Altura (m): <input type="number" id="altura"><br>
+Espaçamento (m): <input type="number" id="metros"><br>
+
+<label>
+<input type="checkbox" id="semMeio">
+Não colocar pilares internos
+</label>
+
+<br>
+<button onclick="gerar()">Gerar</button>
+
+<div class="resultado" id="resultado"></div>
+
+<div id="desenho"></div>
+
+</div>
+
+<script>
+
+let alturaGlobal = 0;
+
+function gerar(){
+
+    let largura = parseFloat(document.getElementById("largura").value);
+    let comprimento = parseFloat(document.getElementById("comprimento").value);
+    let altura = parseFloat(document.getElementById("altura").value);
+    let metros = parseFloat(document.getElementById("metros").value);
+    let semMeio = document.getElementById("semMeio").checked;
+
+    if(!largura || !comprimento || !altura || !metros){
+        alert("Preencha todos os campos!");
+        return;
+    }
+
+    alturaGlobal = altura;
+
+    let pilaresLargura = Math.floor(largura / metros) + 1;
+    let pilaresComprimento = Math.floor(comprimento / metros) + 1;
+
+    desenhar(largura, comprimento, pilaresLargura, pilaresComprimento, semMeio);
+}
+
+function desenhar(largura, comprimento, pl, pc, semMeio){
+
+    let desenho = document.getElementById("desenho");
+    desenho.innerHTML = "";
+
+    let escala = 25;
+
+    desenho.style.width = (largura * escala) + "px";
+    desenho.style.height = (comprimento * escala) + "px";
+
+    let espacX = (largura * escala) / (pl - 1);
+    let espacY = (comprimento * escala) / (pc - 1);
+
+    for(let i=0;i<pl;i++){
+        for(let j=0;j<pc;j++){
+
+            let borda = (i==0 || i==pl-1 || j==0 || j==pc-1);
+
+            let ponto = document.createElement("div");
+            ponto.classList.add("ponto");
+
+            ponto.style.left = (i*espacX)+"px";
+            ponto.style.top = (j*espacY)+"px";
+
+            if(semMeio){
+                if(borda){
+                    ponto.classList.add("ativo");
+                }else{
+                    ponto.classList.add("inativo");
+                }
+            }else{
+                ponto.classList.add("ativo");
+            }
+
+            ponto.addEventListener("click",function(){
+                if(ponto.classList.contains("ativo")){
+                    ponto.classList.remove("ativo");
+                    ponto.classList.add("inativo");
+                }else{
+                    ponto.classList.remove("inativo");
+                    ponto.classList.add("ativo");
+                }
+                atualizarResultado();
+            });
+
+            desenho.appendChild(ponto);
+        }
+    }
+
+    atualizarResultado();
+}
+
+function atualizarResultado(){
+
+    let ativos = document.querySelectorAll(".ativo").length;
+    let metrosColunas = ativos * alturaGlobal;
+
+    document.getElementById("resultado").innerHTML = `
+        Total de Colunas: ${ativos}<br>
+        Metros Totais de Colunas: ${metrosColunas.toFixed(2)} m
+    `;
+}
+
+</script>
+
+</body>
+</html>
